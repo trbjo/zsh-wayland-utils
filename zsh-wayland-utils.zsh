@@ -86,7 +86,7 @@ zle -N sublime-go-to-file-path
 bindkey -e " " sublime-go-to-file-path
 
 
-if command -v iwctl &> /dev/null &&
+if command -v iwctl &> /dev/null
 
     wifi() {
         clear
