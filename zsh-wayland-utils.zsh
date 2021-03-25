@@ -67,3 +67,20 @@ backward-kill-line() {
 }
 zle -N backward-kill-line
 bindkey -e "^U" backward-kill-line
+
+sublime-go-to-file-path() {
+    if [[ $BUFFER =~ ^[0-9]+$ ]]; then
+        light -S $BUFFER
+        unset BUFFER && return 0
+    fi
+
+    [ $BUFFER ] && LBUFFER+=" " && return 0
+
+    subl --command copy_filename
+    read subldir </tmp/sublfile 2> /dev/null
+    cd "$subldir" 2> /dev/null
+    # cd "$(< /tmp/sublfile)" 2> /dev/null
+    zle fzf-redraw-prompt
+}
+zle -N sublime-go-to-file-path
+bindkey -e " " sublime-go-to-file-path
