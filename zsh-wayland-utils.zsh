@@ -79,7 +79,7 @@ sublime-go-to-file-path() {
     subl --command copy_filename
     read subldir </tmp/sublfile 2> /dev/null
     cd "$subldir" 2> /dev/null
-    zle xterm_title_precmd
+    xterm_title_precmd
     zle reset-prompt
 }
 zle -N sublime-go-to-file-path
