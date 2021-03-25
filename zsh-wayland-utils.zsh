@@ -68,6 +68,25 @@ backward-kill-line() {
 zle -N backward-kill-line
 bindkey -e "^U" backward-kill-line
 
+backward-delete-char() {
+    if ((REGION_ACTIVE))
+    then
+        if [[ $CURSOR -gt $MARK ]]; then
+            BUFFER=$BUFFER[0,MARK]$BUFFER[CURSOR+1,-1]
+            CURSOR=$MARK
+        else
+            BUFFER=$BUFFER[1,CURSOR]$BUFFER[MARK+1,-1]
+        fi
+        zle set-mark-command -n -1
+    else
+        [ $BUFFER ] && zle .backward-delete-char || ([ $PopUp ] && swaymsg "[app_id=^PopUp$] scratchpad show; [app_id=^(subl|sublime_text|firefox)$ app_id=__focused__ workspace=^(3|2λ)$] fullscreen enable" > /dev/null) 2>&1
+    fi
+}
+zle -N backward-delete-char
+bindkey "^?" backward-delete-char
+
+
+
 sublime-go-to-file-path() {
     if [[ $BUFFER =~ ^[0-9]+$ ]]; then
         light -S $BUFFER
