@@ -85,6 +85,15 @@ backward-delete-char() {
 zle -N backward-delete-char
 bindkey "^?" backward-delete-char
 
+# copies the full path of a file for later mv
+cpp() {
+    if [[ ${#@} == 0 ]]; then
+        pwd |& tee /dev/tty |& wl-copy -n
+    else
+        wl-copy -n -- $(realpath "${1}") && wl-paste
+    fi
+}
+
 
 
 sublime-go-to-file-path() {
