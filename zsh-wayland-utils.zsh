@@ -30,3 +30,40 @@ notify(){
 fd() {
     /usr/bin/fd --color always ${@} | tee >(wc -l | read num; if [[ $num -eq 1 ]]; then /usr/bin/fd -a ${@} | sed -e 's/ /\\ /g' | wl-copy -n --; fi)
 }
+
+copy-to-wlcopy() {
+    [ -z $BUFFER ] && return 0
+    if ((REGION_ACTIVE)); then
+        if [[ $CURSOR -gt $MARK ]]; then
+            wl-copy -n -- ${BUFFER[$MARK,$CURSOR]:1}
+        else
+            wl-copy -n -- ${BUFFER[$CURSOR,$MARK]:1}
+        fi
+        zle set-mark-command -n -1
+    else
+        wl-copy -n -- $BUFFER
+    fi
+}
+zle -N copy-to-wlcopy
+bindkey -e "\ew" copy-to-wlcopy
+
+
+backward-kill-line() {
+    [ -z $BUFFER ] && return 0
+    if ((REGION_ACTIVE)); then
+        if [[ $CURSOR -gt $MARK ]]; then
+            wl-copy -n -- ${BUFFER[$MARK,$CURSOR]:1}
+            BUFFER=$BUFFER[0,MARK]$BUFFER[CURSOR+1,-1]
+            CURSOR=$MARK
+        else
+            wl-copy -n -- ${BUFFER[$CURSOR,$MARK]:1}
+            BUFFER=$BUFFER[1,CURSOR]$BUFFER[MARK+1,-1]
+        fi
+        zle set-mark-command -n -1
+    else
+        wl-copy -n -- $BUFFER
+        unset BUFFER
+    fi
+}
+zle -N backward-kill-line
+bindkey -e "^U" backward-kill-line
