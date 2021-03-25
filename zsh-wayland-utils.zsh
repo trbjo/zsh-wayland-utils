@@ -80,7 +80,8 @@ sublime-go-to-file-path() {
     read subldir </tmp/sublfile 2> /dev/null
     cd "$subldir" 2> /dev/null
     # cd "$(< /tmp/sublfile)" 2> /dev/null
-    zle fzf-redraw-prompt
+    # zle fzf-redraw-prompt
+    zle reset-prompt
 }
 zle -N sublime-go-to-file-path
 bindkey -e " " sublime-go-to-file-path
