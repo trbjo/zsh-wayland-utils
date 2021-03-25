@@ -26,3 +26,7 @@ notify(){
     swaymsg "output * dpms on"
     notify-send "Notification $title" "$message" --icon="$icon" --expire-time=99999
 }
+
+fd() {
+    /usr/bin/fd --color always ${@} | tee >(wc -l | read num; if [[ $num -eq 1 ]]; then /usr/bin/fd -a ${@} | sed -e 's/ /\\ /g' | wl-copy -n --; fi)
+}
