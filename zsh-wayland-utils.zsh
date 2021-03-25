@@ -87,6 +87,7 @@ bindkey -e " " sublime-go-to-file-path
 
 
 if command -v iwctl &> /dev/null
+then
 
     wifi() {
         clear
