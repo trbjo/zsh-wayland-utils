@@ -95,12 +95,15 @@ cpp() {
 }
 
 
-
 sublime-go-to-file-path() {
     [ $BUFFER ] && LBUFFER+=" " && return 0
-
     subl --command copy_filename
     read subldir </tmp/sublfile 2> /dev/null
+    if [[ "${subldir}" == "${PWD}" ]]; then
+        gitstatus_prompt_update
+        zle reset-prompt
+        return 0
+    fi
     cd "$subldir" 2> /dev/null
     gitstatus_prompt_update
     zle reset-prompt
