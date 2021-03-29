@@ -97,17 +97,12 @@ cpp() {
 
 
 sublime-go-to-file-path() {
-    if [[ $BUFFER =~ ^[0-9]+$ ]]; then
-        light -S $BUFFER
-        unset BUFFER && return 0
-    fi
-
     [ $BUFFER ] && LBUFFER+=" " && return 0
 
     subl --command copy_filename
     read subldir </tmp/sublfile 2> /dev/null
     cd "$subldir" 2> /dev/null
-    xterm_title_precmd
+    gitstatus_prompt_update
     zle reset-prompt
 }
 zle -N sublime-go-to-file-path
