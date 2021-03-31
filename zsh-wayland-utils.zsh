@@ -94,17 +94,6 @@ cpp() {
     fi
 }
 
-
-# Ensure precmds are run after cd
-redraw-prompt() {
-  local precmd
-  for precmd in $precmd_functions; do
-    $precmd
-done
-zle reset-prompt
-}
-zle -N redraw-prompt
-
 sublime-go-to-file-path() {
     [ $BUFFER ] && LBUFFER+=" " && return 0
     subl --command copy_filename
