@@ -94,22 +94,6 @@ cpp() {
     fi
 }
 
-goto_sublime_current_dir() {
-    [ $BUFFER ] && LBUFFER+=" " && return 0
-    subl --command goto_sublime_current_dir
-    read subldir </tmp/sublfile 2> /dev/null
-    if [[ "${subldir}" == "${PWD}" ]]; then
-        redraw-prompt
-        zle reset-prompt
-        return 0
-    fi
-    cd "$subldir" 2> /dev/null
-    redraw-prompt
-    zle reset-prompt
-}
-zle -N goto_sublime_current_dir
-bindkey -e " " goto_sublime_current_dir
-
 
 if command -v iwctl &> /dev/null
 then
