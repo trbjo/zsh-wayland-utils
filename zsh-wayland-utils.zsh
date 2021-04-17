@@ -94,9 +94,9 @@ cpp() {
     fi
 }
 
-sublime-go-to-file-path() {
+goto_sublime_current_dir() {
     [ $BUFFER ] && LBUFFER+=" " && return 0
-    subl --command copy_filename
+    subl --command goto_sublime_current_dir
     read subldir </tmp/sublfile 2> /dev/null
     if [[ "${subldir}" == "${PWD}" ]]; then
         redraw-prompt
@@ -107,8 +107,8 @@ sublime-go-to-file-path() {
     redraw-prompt
     zle reset-prompt
 }
-zle -N sublime-go-to-file-path
-bindkey -e " " sublime-go-to-file-path
+zle -N goto_sublime_current_dir
+bindkey -e " " goto_sublime_current_dir
 
 
 if command -v iwctl &> /dev/null
