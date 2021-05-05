@@ -100,18 +100,19 @@ then
 
     wifi() {
         clear
-        ! systemctl is-active --quiet iwd && sudo systemctl enable --now --quiet iwd.service && notify-send "Wi-Fi Manager" "Turning Wi-Fi on" --icon=preferences-system-network
-        sudo /usr/bin/rfkill unblock wifi
+        doas /usr/bin/ip link set dev wlan0 up
+        # ! systemctl is-active --quiet iwd && doas systemctl enable --now --quiet iwd.service && notify-send "Wi-Fi Manager" "Turning Wi-Fi on" --icon=preferences-system-network
+        doas /usr/bin/rfkill unblock wifi
         iwctl station wlan0 scan on
         clear
         local name=$(iwctl station wlan0 get-networks | sed -e "/Available networks/d" -e "/------/d" -e "s/^\x1b\[[0-9;]*m//" -e "/^\s*$/d" -e "s/^\s...//g" -e "s/^.....>.....\(.*\)/`printf "\x1B[1m\033[3m"`\1`printf "\033[0m"`/" | fzf --color='prompt:3,header:bold:underline:8' --no-preview --bind 'change:reload(iwctl station wlan0 get-networks | sed -e "/Available networks/d" -e "/------/d" -e "s/^\x1b\[[0-9;]*m//" -e "/^\s*$/d" -e "s/^\s...//g" -e "s/^.....>.....\(.*\)/`printf "\x1B[1m\033[3m"`\1`printf "\033[0m"`/")' --bind 'tab:reload(iwctl station wlan0 get-networks | sed -e "/Available networks/d" -e "/------/d" -e "s/^\x1b\[[0-9;]*m//" -e "/^\s*$/d" -e "s/^\s...//g" -e "s/^.....>.....\(.*\)/`printf "\x1B[1m\033[3m"`\1`printf "\033[0m"`/")' --inline-info --reverse --header-lines=1 --ansi --no-multi | sed -e 's/................$//' | xargs)
-        iwctl station wlan0 scan off
         if [[ -z ${name} ]]; then
             return 0
         fi
-        iwctl station wlan0 connect $name
+        iwctl station wlan0 connect "$name"
         wait
         /usr/lib/systemd/systemd-networkd-wait-online --ignore=lo --timeout=30 --interface=wlan0 --operational-state=dormant && notify-send "Wi-Fi Manager" --icon=preferences-system-network "Connected to $(iw dev wlan0 link | grep -oP '(?<=SSID: ).+')" && pkill -RTMIN+13 i3blocks
+        iwctl station wlan0 scan off
     }
 
     wifipw() {
@@ -119,6 +120,6 @@ then
         ssid="$(iw dev wlan0 link | grep --color=never -oP '(?<=SSID: ).+')"
         [ -z $ssid ] && echo "Not connected to a network" && return 1
         # requires /etc/sudoers to have the line: tb ALL=(ALL) NOPASSWD:/usr/bin/cat /var/lib/iwd/*
-        sudo /usr/bin/cat "/var/lib/iwd/"${ssid}.psk"" | grep --color=never -oP '(?<=Passphrase=)\w+' | tee /dev/tty | wl-copy -n
+        doas /usr/bin/cat "/var/lib/iwd/"${ssid}.psk"" | grep --color=never -oP '(?<=Passphrase=)\w+' | tee /dev/tty | wl-copy -n
     }
 fi
