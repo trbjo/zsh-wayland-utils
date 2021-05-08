@@ -1,4 +1,4 @@
-ss() {
+__colorpicker() {
     if [[ $#@ -lt 1 ]]
     then
         colorcode=$(grim -g "$(env XCURSOR_SIZE=48 slurp -p )" -t ppm - | convert - -format "%[pixel:p{0,0}]" txt:- | awk 'FNR == 2 {print $2 " " $3}' | tr -d "\n" | tee /dev/tty | sed 's/.*#//') 2> /dev/null
@@ -8,9 +8,10 @@ ss() {
             wl-copy -n $colorcode
         fi
     else
-        perl -e 'foreach $a(@ARGV){print "\e[48:2::".join(":",unpack("C*",pack("H*",$a)))."m \e[49m"; print"\e[48:2::".join(":",unpack("C*",pack("H*",$a)))."m \e[49m "};print "\n"' "$@"
+        perl -e 'foreach $a(@ARGV){print "\e[48:2::".join(":",unpack("C*",pack("H*",$a)))."m  \e[49m "}; print "\n"' "${@//\#/}"
     fi
 }
+alias ss='noglob __colorpicker'
 
 notify(){
     if [ $? -eq 0 ]; then
