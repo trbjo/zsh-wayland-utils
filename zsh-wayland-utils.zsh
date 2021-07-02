@@ -82,7 +82,7 @@ backward-delete-char() {
         if [ $BUFFER ] ; then
             zle .backward-delete-char
         else
-            [ "${LASTWIDGET}" != "backward-delete-char" ] && [ $PopUp ] && swaymsg "[app_id=^PopUp$] scratchpad show; [app_id=^(subl|sublime_text|firefox)$ app_id=__focused__ workspace=^(3|2λ)$] fullscreen enable" > /dev/null 2>&1
+            [ "${LASTWIDGET}" != "backward-delete-char" ] && [ $PopUp ] && swaymsg "[app_id=^PopUp$] scratchpad show" > /dev/null 2>&1
         fi
     fi
 }
