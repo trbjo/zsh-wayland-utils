@@ -69,26 +69,6 @@ backward-kill-line() {
 zle -N backward-kill-line
 bindkey -e "^U" backward-kill-line
 
-backward-delete-char() {
-    if ((REGION_ACTIVE)) then
-        if [[ $CURSOR -gt $MARK ]]; then
-            BUFFER=$BUFFER[0,MARK]$BUFFER[CURSOR+1,-1]
-            CURSOR=$MARK
-        else
-            BUFFER=$BUFFER[1,CURSOR]$BUFFER[MARK+1,-1]
-        fi
-        zle set-mark-command -n -1
-    else
-        if [ $BUFFER ] ; then
-            zle .backward-delete-char
-        else
-            [ "${LASTWIDGET}" != "backward-delete-char" ] && [ $PopUp ] && swaymsg "[app_id=^PopUp$] scratchpad show" > /dev/null 2>&1
-        fi
-    fi
-}
-zle -N backward-delete-char
-bindkey "^?" backward-delete-char
-
 # copies the full path of a file for later mv
 cpp() {
     if [[ ${#@} == 0 ]]; then
