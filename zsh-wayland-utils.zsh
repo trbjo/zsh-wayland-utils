@@ -48,7 +48,6 @@ copy-to-wlcopy() {
 zle -N copy-to-wlcopy
 bindkey -e "\ew" copy-to-wlcopy
 
-
 backward-kill-line() {
     [ -z $BUFFER ] && return 0
     if ((REGION_ACTIVE)); then
