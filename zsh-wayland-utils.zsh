@@ -78,7 +78,6 @@ cpp() {
     fi
 }
 
-
 if command -v iwctl &> /dev/null
 then
 
