@@ -98,10 +98,17 @@ then
     }
 
     wifipw() {
+        before=$EPOCHREALTIME
         ! systemctl is-active --quiet iwd.service && echo "Wi-Fi service is not running" && return 1
         ssid="$(iw dev wlan0 link | grep --color=never -oP '(?<=SSID: ).+')"
         [ -z $ssid ] && echo "Not connected to a network" && return 1
         # requires /etc/sudoers to have the line: tb ALL=(ALL) NOPASSWD:/usr/bin/cat /var/lib/iwd/*
         doas /usr/bin/cat "/var/lib/iwd/"${ssid}.psk"" | grep --color=never -oP '(?<=Passphrase=)\w+' | tee /dev/tty | wl-copy -n
+        after=$EPOCHREALTIME
+        # if command took more than a second, print advice that you do not need password
+        if (( after - before > 1 )); then
+            print "Consider adding /usr/bin/cat to /etc/sudoers or /etc/doas.conf"
+        fi
+
     }
 fi
