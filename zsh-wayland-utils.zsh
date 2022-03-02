@@ -32,6 +32,14 @@ fd() {
     /usr/bin/fd --color always ${@} | tee >(wc -l | read num; if [[ $num -eq 1 ]]; then /usr/bin/fd -a ${@} | sed -e 's/ /\\ /g' | wl-copy -n --; fi)
 }
 
+stc() {
+    local _myfile
+    subl --command doas_edit
+    _myfile=$(</tmp/doasedit)
+    subl --command close
+    rm $_myfile
+}
+
 copy-to-wlcopy() {
     [ -z $BUFFER ] && return 0
     if ((REGION_ACTIVE)); then
