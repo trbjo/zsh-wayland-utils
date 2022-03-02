@@ -32,12 +32,42 @@ fd() {
     /usr/bin/fd --color always ${@} | tee >(wc -l | read num; if [[ $num -eq 1 ]]; then /usr/bin/fd -a ${@} | sed -e 's/ /\\ /g' | wl-copy -n --; fi)
 }
 
+confirm() {
+    echo -n "Continue? y or n? "
+    read REPLY
+    case $REPLY in
+    [Yy]) _ans='yes' ;; # you can change what you do here for instance
+    [Nn]) _ans='no' ;;
+    # Here are a few optional options to choose between
+    # Any other answer:
+
+    # 1. Repeat the question
+    *) confirm ;;
+
+    # 2. ignore
+    # *) ;;
+
+    # 3. Exit terminal
+    # *) exit ;;
+
+    esac
+    REPLY=''
+}
+
+
 stc() {
     local _myfile
     subl --command doas_edit
     _myfile=$(</tmp/doasedit)
-    subl --command close
-    rm $_myfile
+    _colorizer $_myfile
+    print "Do you want to delete this file:"
+    print "$_colorfile"
+    confirm
+    if [[ $_ans == "yes" ]]; then
+        subl --command close
+        rm $_myfile
+    fi
+    return 0
 }
 
 copy-to-wlcopy() {
