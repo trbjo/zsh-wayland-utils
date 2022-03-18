@@ -59,9 +59,7 @@ stc() {
     local _myfile
     subl --command doas_edit
     _myfile=$(</tmp/doasedit)
-    _colorizer $_myfile
-    print "Do you want to delete this file:"
-    print "$_colorfile"
+    print "Do you want to delete this file: $(_colorizer $_myfile)"
     confirm
     if [[ $_ans == "yes" ]]; then
         subl --command close
