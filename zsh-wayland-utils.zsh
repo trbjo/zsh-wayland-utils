@@ -17,6 +17,7 @@ if [[ -n $SWAYSOCK ]]; then
     alias qwerty='swaymsg input "1:1:AT_Translated_Set_2_keyboard" xkb_layout us'
 fi
 
+alias -g CC=' |& tee /dev/tty |& wl-copy -n'
 alias findip='curl -s icanhazip.com | tee >(wl-copy -n -- 2> /dev/null); return 0'
 
 __colorpicker() {
