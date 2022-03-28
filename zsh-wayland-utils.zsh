@@ -1,3 +1,24 @@
+# Make it easy to files for wayland session
+if [[ ! -d "${HOME}/.grconfig" ]]; then
+    export INSTALL_WAYLAND_CONFIG="git clone --depth=1 --bare https://github.com/trbjo/grconfig $HOME/.grconfig &&\
+    git --git-dir=$HOME/.grconfig/ --work-tree=$HOME config --local core.bare false &&\
+    git --git-dir=$HOME/.grconfig/ --work-tree=$HOME config --local core.worktree "$HOME" &&\
+    git --git-dir=$HOME/.grconfig/ --work-tree=$HOME checkout &&\
+    git --git-dir=$HOME/.grconfig/ --work-tree=$HOME remote set-url origin git@github.com:trbjo/grconfig.git &&\
+    unset INSTALL_WAYLAND_CONFIG"
+fi
+
+[[ -d "${HOME}/.grconfig" ]] && alias grconfig='/usr/bin/git --git-dir=$HOME/.grconfig/ --work-tree=$HOME'
+
+if [[ -n $SWAYSOCK ]]; then
+    alias commit='swaymsg [app_id="^PopUp$"] move scratchpad\; [app_id="^subl$"] focus > /dev/null 2>&1; git commit -v; swaymsg [app_id="^PopUp$"] scratchpad show, fullscreen disable, move position center, resize set width 100ppt height 100ppt, resize grow width 2px, resize shrink up 1100px, resize grow up 340px, move down 1px'
+    alias swaymsg='noglob swaymsg'
+    alias dvorak='swaymsg input "1:1:AT_Translated_Set_2_keyboard" xkb_layout us(dvorak)'
+    alias qwerty='swaymsg input "1:1:AT_Translated_Set_2_keyboard" xkb_layout us'
+fi
+
+alias findip='curl -s icanhazip.com | tee >(wl-copy -n -- 2> /dev/null); return 0'
+
 __colorpicker() {
     if [[ $#@ -lt 1 ]]
     then
