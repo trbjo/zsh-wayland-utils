@@ -1,3 +1,7 @@
+#subwords, see alaccritty config
+bindkey "^[s" vi-backward-blank-word
+bindkey "^[t" vi-forward-blank-word
+
 # Make it easy to files for wayland session
 if [[ ! -d "${HOME}/.grconfig" ]]; then
     export INSTALL_WAYLAND_CONFIG="git clone --depth=1 --bare https://github.com/trbjo/grconfig $HOME/.grconfig &&\
