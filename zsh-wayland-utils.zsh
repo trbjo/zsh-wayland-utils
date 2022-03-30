@@ -39,6 +39,21 @@ __colorpicker() {
 }
 alias ss='noglob __colorpicker'
 
+n() {
+    if "$@"; then
+        swaymsg "output * dpms on"
+        local icon="process-completed"
+        notify-send "Done" "$*" --icon="$icon" --expire-time=99999
+        return 0
+    else
+        local exit_code=$?
+        local icon="dialog-error"
+        swaymsg "output * dpms on"
+        notify-send "Exit $exit_code" "$*" --icon="$icon" --expire-time=99999
+        return "$exit_code"
+    fi
+}
+
 notify(){
     if [ $? -eq 0 ]; then
         title="Succes"
