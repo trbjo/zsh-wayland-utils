@@ -66,7 +66,7 @@ notify(){
 }
 
 fd() {
-    /usr/bin/fd --color always ${@} | tee >(wc -l | read num; if [[ $num -eq 1 ]]; then /usr/bin/fd -a ${@} | sed -e 's/ /\\ /g' | wl-copy -n --; fi)
+    /usr/bin/fd --absolute-path --color always ${@} | tee >(wc -l | read num; if [[ $num -eq 1 ]]; then /usr/bin/fd --absolute-path ${@} | read file; print -n "${(q)file}" | wl-copy -n --; fi)
 }
 
 copy-to-wlcopy() {
