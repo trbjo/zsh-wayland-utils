@@ -89,7 +89,7 @@ backward-kill-line() {
     [ -z $BUFFER ] && return 0
     if ((REGION_ACTIVE)); then
         if [[ $CURSOR -gt $MARK ]]; then
-            wl-copy -n -- ${BUFFER[$MARK,$CURSOR]:1}
+            wl-copy -n -- ${BUFFER[$MARK,$CURSOR]}
             BUFFER=$BUFFER[0,MARK]$BUFFER[CURSOR+1,-1]
             CURSOR=$MARK
         else
