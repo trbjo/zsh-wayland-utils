@@ -89,8 +89,8 @@ kill-buffer() {
     [[ -z $BUFFER ]] && return 0
     if ((REGION_ACTIVE)); then
         if [[ $CURSOR -gt $MARK ]]; then
-            wl-copy -n -- ${BUFFER[$MARK,$CURSOR]}
-            BUFFER=$BUFFER[0,MARK]$BUFFER[CURSOR+1,-1]
+            wl-copy -n -- ${BUFFER[${MARK}+1,$CURSOR]}
+            BUFFER=${BUFFER[0,MARK]}${BUFFER[CURSOR+1,$#BUFFER]}
             CURSOR=$MARK
         else
             wl-copy -n -- ${BUFFER[$CURSOR,$MARK]:1}
