@@ -85,8 +85,8 @@ copy-to-wlcopy() {
 zle -N copy-to-wlcopy
 bindkey -e "\ew" copy-to-wlcopy
 
-backward-kill-line() {
-    [ -z $BUFFER ] && return 0
+kill-buffer() {
+    [[ -z $BUFFER ]] && return 0
     if ((REGION_ACTIVE)); then
         if [[ $CURSOR -gt $MARK ]]; then
             wl-copy -n -- ${BUFFER[$MARK,$CURSOR]}
@@ -99,11 +99,11 @@ backward-kill-line() {
         zle set-mark-command -n -1
     else
         wl-copy -n -- $BUFFER
-        unset BUFFER
+        zle .kill-buffer
     fi
 }
-zle -N backward-kill-line
-bindkey -e "^U" backward-kill-line
+zle -N kill-buffer
+bindkey -e "^U" kill-buffer
 
 # copies the full path of a file for later mv
 cpp() {
