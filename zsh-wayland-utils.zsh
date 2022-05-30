@@ -130,20 +130,22 @@ then
         fi
         iwctl station wlan0 connect "$name"
         wait
-        /usr/lib/systemd/systemd-networkd-wait-online --ignore=lo --timeout=30 --interface=wlan0 --operational-state=dormant && notify-send "Wi-Fi Manager" --icon=preferences-system-network "Connected to $(iw dev wlan0 link | grep -oP '(?<=SSID: ).+')" && pkill -RTMIN+13 i3blocks
+        /usr/lib/systemd/systemd-networkd-wait-online --ignore=lo --timeout=30 --interface=wlan0 --operational-state=dormant && notify-send "Wi-Fi Manager" --icon=preferences-system-network "Connected to $(iw dev wlan0 link | grep -oP '(?<=SSID: ).+')"
         iwctl station wlan0 scan off
     }
 
     wifipw() {
-        before=$EPOCHREALTIME
+        local before=$EPOCHREALTIME
         ! systemctl is-active --quiet iwd.service && echo "Wi-Fi service is not running" && return 1
+
         ssid="$(iw dev wlan0 link | grep --color=never -oP '(?<=SSID: ).+')"
         [ -z $ssid ] && echo "Not connected to a network" && return 1
+
         # requires /etc/sudoers to have the line: tb ALL=(ALL) NOPASSWD:/usr/bin/cat /var/lib/iwd/*
         doas /usr/bin/cat "/var/lib/iwd/"${ssid}.psk"" | grep --color=never -oP '(?<=Passphrase=)\w+' | tee /dev/tty | wl-copy -n
-        after=$EPOCHREALTIME
+
         # if command took more than a second, print advice that you do not need password
-        if (( after - before > 1 )); then
+        if (( $EPOCHREALTIME - before > 1 )); then
             print "Consider adding /usr/bin/cat to /etc/sudoers or /etc/doas.conf"
         fi
 
