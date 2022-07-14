@@ -44,6 +44,7 @@ n() {
     local message title icon
 
     if [[ -z $@ ]]; then
+        message="$(fc -ln -1 -1)"
         if [[ $exit_code -eq 0 ]]; then
             title="Success"
             icon="process-completed"
@@ -51,7 +52,6 @@ n() {
             title="Failure $exit_code"
             icon="dialog-error"
         fi
-        [[ "$1" ]] && message="$1" || message="$(echo $PWD | sed -e 's/\/.*\///g')"
     else
         if "$@"; then
             title="lol"
@@ -64,7 +64,7 @@ n() {
         message="$*"
     fi
 
-    type swaymsg > /dev/null 2>&1 && swaymsg "output * dpms on"
+    type swaymsg > /dev/null 2>&1 && swaymsg -q "output * dpms on" > /dev/null 2>&1
     notify-send "$title" "$message" --icon="$icon" --expire-time=99999
     return "${exit_code:-0}"
 }
