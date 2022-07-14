@@ -40,29 +40,33 @@ __colorpicker() {
 alias ss='noglob __colorpicker'
 
 n() {
-    if "$@"; then
-        notify-send "Done" "$*" --icon="process-completed" --expire-time=99999
+    local exit_code=$?
+    local message title icon
+
+    if [[ -z $@ ]]; then
+        if [[ $exit_code -eq 0 ]]; then
+            title="Success"
+            icon="process-completed"
+        else
+            title="Failure $exit_code"
+            icon="dialog-error"
+        fi
+        [[ "$1" ]] && message="$1" || message="$(echo $PWD | sed -e 's/\/.*\///g')"
     else
-        local exit_code=$?
-        notify-send "Exit $exit_code" "$*" --icon="dialog-error" --expire-time=99999
+        if "$@"; then
+            title="lol"
+            icon="process-completed"
+        else
+            exit_code=$?
+            title="Failure $exit_code"
+            icon="dialog-error"
+        fi
+        message="$*"
     fi
-    swaymsg "output * dpms on"
+
+    type swaymsg > /dev/null 2>&1 && swaymsg "output * dpms on"
+    notify-send "$title" "$message" --icon="$icon" --expire-time=99999
     return "${exit_code:-0}"
-}
-
-notify(){
-    if [ $? -eq 0 ]; then
-        title="Succes"
-        icon="process-completed"
-    else
-        title="Failure"
-        icon="dialog-error"
-    fi
-
-    message="$(echo $PWD | sed -e 's/\/.*\///g')"
-    [ "$1" ] && message=$1
-    swaymsg "output * dpms on"
-    notify-send "Notification $title" "$message" --icon="$icon" --expire-time=99999
 }
 
 fd() {
