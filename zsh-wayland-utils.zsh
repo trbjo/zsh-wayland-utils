@@ -122,13 +122,24 @@ if command -v iwctl &> /dev/null
 then
 
     wifi() {
-        clear
+        ! systemctl is-active --quiet iwd && doas /usr/bin/systemctl enable --now --quiet iwd.service && notify-send "Wi-Fi Manager" "Turning Wi-Fi on" --icon=preferences-system-network
         doas /usr/bin/ip link set dev wlan0 up
-        # ! systemctl is-active --quiet iwd && doas systemctl enable --now --quiet iwd.service && notify-send "Wi-Fi Manager" "Turning Wi-Fi on" --icon=preferences-system-network
         doas /usr/bin/rfkill unblock wifi
         iwctl station wlan0 scan on
-        clear
-        local name=$(iwctl station wlan0 get-networks | sed -e "/Available networks/d" -e "/------/d" -e "s/^\x1b\[[0-9;]*m//" -e "/^\s*$/d" -e "s/^\s...//g" -e "s/^.....>.....\(.*\)/`printf "\x1B[1m\033[3m"`\1`printf "\033[0m"`/" | fzf --color='prompt:3,header:bold:underline:7' --no-preview --bind 'change:reload(iwctl station wlan0 get-networks | sed -e "/Available networks/d" -e "/------/d" -e "s/^\x1b\[[0-9;]*m//" -e "/^\s*$/d" -e "s/^\s...//g" -e "s/^.....>.....\(.*\)/`printf "\x1B[1m\033[3m"`\1`printf "\033[0m"`/")' --bind 'tab:reload(iwctl station wlan0 get-networks | sed -e "/Available networks/d" -e "/------/d" -e "s/^\x1b\[[0-9;]*m//" -e "/^\s*$/d" -e "s/^\s...//g" -e "s/^.....>.....\(.*\)/`printf "\x1B[1m\033[3m"`\1`printf "\033[0m"`/")' --nth='..-3' --inline-info --reverse --header-lines=1 --ansi --no-multi | grep --color=never -ozP "^.+?(?=\s{1,99}(psk|open))")
+        local name=$(\
+            local evalstr='iwctl station wlan0 get-networks | sed -e "/Available networks/d" -e "/------/d" -e "s/^\x1b\[[0-9;]*m//" -e "/^\s*$/d" -e "s/^\s...//g" -e "s/^.....>.....\(.*\)/`printf "\x1B[1m\033[3m"`\1`printf "\033[0m"`/"'
+            eval $evalstr | fzf --color='prompt:3,header:bold:underline:7'\
+            --no-preview\
+            --bind "change:reload(eval $evalstr)"\
+            --bind "tab:reload(eval $evalstr)"\
+            --nth='..-3'\
+            --inline-info\
+            --reverse\
+            --header-lines=1\
+            --ansi\
+            --no-multi\
+            | grep --color=never -ozP "^.+?(?=\s{1,99}(psk|open))"\
+            )
         if [[ -z ${name} ]]; then
             return 0
         fi
