@@ -126,8 +126,10 @@ then
         doas /usr/bin/ip link set dev wlan0 up
         doas /usr/bin/rfkill unblock wifi
         iwctl station wlan0 scan on
+
         local name=$(\
-            local evalstr='iwctl station wlan0 get-networks | sed -e "/Available networks/d" -e "/------/d" -e "s/^\x1b\[[0-9;]*m//" -e "/^\s*$/d" -e "s/^\s...//g" -e "s/^.....>.....\(.*\)/`printf "\x1B[1m\033[3m"`\1`printf "\033[0m"`/"'
+            local evalstr='iwctl station wlan0 get-networks | sed -e "/Available networks/d" -e "s/\x1b\[[0-9;]*m//g" -e "/------/d" -e "/^\s*$/d" | cut -c 7-'
+            # local evalstr='iwctl station wlan0 get-networks | sed -e "/Available networks/d" -e "/------/d" -e "s/^\x1b\[[0-9;]*m//" -e "/^\s*$/d" -e "s/^\s...//g" -e "s/^.....>.....\(.*\)/`printf "\x1B[1m\033[3m"`\1`printf "\033[0m"`/"'
             eval $evalstr | fzf --color='prompt:3,header:bold:underline:7'\
             --no-preview\
             --bind "change:reload(eval $evalstr)"\
