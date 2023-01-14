@@ -22,7 +22,6 @@ if [[ -n $SWAYSOCK ]]; then
 fi
 
 alias -g CC=' |& tee /dev/tty |& wl-copy -n'
-alias findip='curl -s icanhazip.com | tee >(wl-copy -n -- 2> /dev/null); return 0'
 
 __colorpicker() {
     if [[ $#@ -lt 1 ]]
