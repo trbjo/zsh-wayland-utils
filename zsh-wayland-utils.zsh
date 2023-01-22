@@ -69,7 +69,11 @@ n() {
 }
 
 fd() {
-    /usr/bin/fd --absolute-path --color always ${@} | tee >(wc -l | read num; if [[ $num -eq 1 ]]; then /usr/bin/fd --absolute-path ${@} | read file; print -n "${(q)file}" | wl-copy -n --; fi)
+    typeset -a results
+    local IFS=$'\n'
+    results=($(/usr/bin/fd --absolute-path --color always ${@}))
+    print -l ${results}
+    ((${#results} != 1 )) || print -n "${(qqq)results[1]}" | awk '{gsub("(.\\[[0-9]+m|.\\(..\\[m)","",$0)}1' | wl-copy -n --
 }
 
 copy-to-wlcopy() {
