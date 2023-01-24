@@ -23,6 +23,21 @@ fi
 
 alias -g CC=' |& tee /dev/tty |& wl-copy -n'
 
+# this is meant to be bound to the same key as the terminal paste key
+delete_active_selection() {
+    if ((REGION_ACTIVE)) then
+        if [[ $CURSOR -gt $MARK ]]; then
+            BUFFER=$BUFFER[0,MARK]$BUFFER[CURSOR+1,-1]
+            CURSOR=$MARK
+        else
+            BUFFER=$BUFFER[1,CURSOR]$BUFFER[MARK+1,-1]
+        fi
+        zle set-mark-command -n -1
+    fi
+}
+zle -N delete_active_selection
+bindkey "\ee" delete_active_selection
+
 __colorpicker() {
     if [[ $#@ -lt 1 ]]
     then
@@ -41,6 +56,7 @@ alias ss='noglob __colorpicker'
 n() {
     local exit_code=$?
     local message title icon
+    /usr/bin/gdbus call --system --dest org.freedesktop.login1 --object-path /org/freedesktop/login1/session/auto --method org.freedesktop.login1.Session.SetIdleHint false > /dev/null 2>&1
 
     if [[ -z $@ ]]; then
         message="$(fc -ln -1 -1)"
