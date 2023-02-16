@@ -15,7 +15,7 @@ fi
 [[ -d "${HOME}/.grconfig" ]] && alias grconfig='/usr/bin/git --git-dir=$HOME/.grconfig/ --work-tree=$HOME'
 
 if [[ -n $SWAYSOCK ]]; then
-    alias commit='swaymsg [title="^PopUp$"] move scratchpad\; [app_id="^sublime_text$"] focus; git commit -v; swaymsg [title="^PopUp$"] scratchpad show, fullscreen disable, move position center, resize set width 100ppt height 100ppt, resize grow width 2px, resize shrink up 1100px, resize grow up 340px, move down 1px'
+    alias commit='swaymsg [title="^PopUp$"] move scratchpad\; [title=__focused__ app_id="^sublime_text$"] focus || swaymsg app_id="^sublime_text$"] focus; git commit -v; swaymsg [title="^PopUp$"] scratchpad show, fullscreen disable, move position center, resize set width 100ppt height 100ppt, resize grow width 2px, resize shrink up 1100px, resize grow up 340px, move down 1px'
     alias swaymsg='noglob swaymsg'
     alias dvorak='swaymsg input "1:1:AT_Translated_Set_2_keyboard" xkb_layout us(dvorak)'
     alias qwerty='swaymsg input "1:1:AT_Translated_Set_2_keyboard" xkb_layout us'
