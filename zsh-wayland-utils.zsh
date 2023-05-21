@@ -84,13 +84,6 @@ n() {
     return "${exit_code:-0}"
 }
 
-fd() {
-    typeset -a results
-    local IFS=$'\n'
-    results=($(/usr/bin/fd --color always ${@}))
-    print -l ${results}
-    ((${#results} != 1 )) || realpath $(print -n "${results[1]:Q}" | awk '{gsub("(.\\[[0-9]+m|.\\(..\\[m)","",$0)}1') | wl-copy -n --
-}
 
 copy-to-wlcopy() {
     [ -z $BUFFER ] && return 0
