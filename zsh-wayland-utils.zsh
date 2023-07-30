@@ -15,7 +15,7 @@ fi
 [[ -d "${HOME}/.grconfig" ]] && alias grconfig='/usr/bin/git --git-dir=$HOME/.grconfig/ --work-tree=$HOME'
 
 if [[ -n $SWAYSOCK ]]; then
-    alias commit='swaymsg [title="^PopUp$"] move scratchpad\; [title=__focused__ app_id="^sublime_text$"] focus || swaymsg app_id="^sublime_text$"] focus; git commit -v; swaymsg [title="^PopUp$"] scratchpad show, fullscreen disable, move position center, resize set width 100ppt height 100ppt, resize grow width 2px, resize shrink up 1100px, resize grow up 340px, move down 1px'
+    alias commit="git commit -v"
     alias swaymsg='noglob swaymsg'
     alias dvorak='swaymsg input "1:1:AT_Translated_Set_2_keyboard" xkb_layout us(dvorak)'
     alias qwerty='swaymsg input "1:1:AT_Translated_Set_2_keyboard" xkb_layout us'
@@ -69,7 +69,7 @@ n() {
         fi
     else
         if "$@"; then
-            title="lol"
+            title="Success"
             icon="process-completed"
         else
             exit_code=$?
@@ -79,47 +79,47 @@ n() {
         message="$*"
     fi
 
-    type swaymsg > /dev/null 2>&1 && swaymsg -q "output * dpms on" > /dev/null 2>&1
+    type swaymsg > /dev/null 2>&1 && swaymsg -q "output * power on" > /dev/null 2>&1
     notify-send "$title" "$message" --icon="$icon" --expire-time=99999
     return "${exit_code:-0}"
 }
 
 
-copy-to-wlcopy() {
-    [ -z $BUFFER ] && return 0
-    if ((REGION_ACTIVE)); then
-        if [[ $CURSOR -gt $MARK ]]; then
-            wl-copy -n -- ${BUFFER[$MARK,$CURSOR]:1}
-        else
-            wl-copy -n -- ${BUFFER[$CURSOR,$MARK]:1}
-        fi
-        zle set-mark-command -n -1
-    else
-        wl-copy -n -- $BUFFER
-    fi
-}
-zle -N copy-to-wlcopy
-bindkey -e "\ew" copy-to-wlcopy
-
 kill-buffer() {
     [[ -z $BUFFER ]] && return 0
-    if ((REGION_ACTIVE)); then
-        if [[ $CURSOR -gt $MARK ]]; then
-            wl-copy -n -- ${BUFFER[${MARK}+1,$CURSOR]}
-            BUFFER=${BUFFER[0,MARK]}${BUFFER[CURSOR+1,$#BUFFER]}
-            CURSOR=$MARK
-        else
-            wl-copy -n -- ${BUFFER[$CURSOR,$MARK]:1}
-            BUFFER=$BUFFER[1,CURSOR]$BUFFER[MARK+1,-1]
-        fi
-        zle set-mark-command -n -1
+
+    local text a b
+
+    if (( ! REGION_ACTIVE )); then
+        a=0
+        b=${#BUFFER}
+    elif [[ $CURSOR -gt $MARK ]]; then
+        a=$MARK
+        b=$CURSOR
     else
-        wl-copy -n -- $BUFFER
-        zle .kill-buffer
+        a=$CURSOR
+        b=$MARK
     fi
+
+    text="${BUFFER[$a+1,$b]}"
+    text=$(print -r -n -- "$text" | base64 -w 0)
+    printf "\033]52;c;$text\a"
+
+    if [[ -z "$@" ]]; then
+        BUFFER=${BUFFER[0,$a]}${BUFFER[$b+1,$#BUFFER]}
+        CURSOR=$a
+    fi
+
+    zle deactivate-region -w
+
 }
 zle -N kill-buffer
 bindkey -e "^U" kill-buffer
+
+copy_buffer() { kill-buffer copy }
+zle -N copy_buffer
+bindkey -e "\ew" copy_buffer
+
 
 # copies the full path of a file for later mv
 cpp() {
