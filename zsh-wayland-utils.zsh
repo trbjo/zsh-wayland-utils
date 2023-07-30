@@ -21,8 +21,6 @@ if [[ -n $SWAYSOCK ]]; then
     alias qwerty='swaymsg input "1:1:AT_Translated_Set_2_keyboard" xkb_layout us'
 fi
 
-alias -g CC=' |& tee /dev/tty |& wl-copy -n'
-
 # this is meant to be bound to the same key as the terminal paste key
 delete_active_selection() {
     if ((REGION_ACTIVE)) then
@@ -84,51 +82,6 @@ n() {
     return "${exit_code:-0}"
 }
 
-
-kill-buffer() {
-    [[ -z $BUFFER ]] && return 0
-
-    local text a b
-
-    if (( ! REGION_ACTIVE )); then
-        a=0
-        b=${#BUFFER}
-    elif [[ $CURSOR -gt $MARK ]]; then
-        a=$MARK
-        b=$CURSOR
-    else
-        a=$CURSOR
-        b=$MARK
-    fi
-
-    text="${BUFFER[$a+1,$b]}"
-    text=$(print -r -n -- "$text" | base64 -w 0)
-    printf "\033]52;c;$text\a"
-
-    if [[ -z "$@" ]]; then
-        BUFFER=${BUFFER[0,$a]}${BUFFER[$b+1,$#BUFFER]}
-        CURSOR=$a
-    fi
-
-    zle deactivate-region -w
-
-}
-zle -N kill-buffer
-bindkey -e "^U" kill-buffer
-
-copy_buffer() { kill-buffer copy }
-zle -N copy_buffer
-bindkey -e "\ew" copy_buffer
-
-
-# copies the full path of a file for later mv
-cpp() {
-    if [[ ${#@} == 0 ]]; then
-        pwd |& tee /dev/tty |& wl-copy -n
-    else
-        wl-copy -n -- $(realpath "${1}") && wl-paste
-    fi
-}
 
 if command -v iwctl &> /dev/null
 then
