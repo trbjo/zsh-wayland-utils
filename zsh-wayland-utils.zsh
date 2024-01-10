@@ -51,40 +51,75 @@ if command -v iwctl &> /dev/null
 then
 
     wifi() {
+        set -o localoptions -o localtraps
         ! systemctl is-active --quiet iwd && doas /usr/bin/systemctl enable --now --quiet iwd.service && notify-send "Wi-Fi Manager" "Turning Wi-Fi on" --icon=preferences-system-network
-        doas /usr/bin/ip link set dev wlan up
+        local iface
+        if [[ -n "$1" ]] && [[ $1 == --iface=* ]]; then
+            iface="${1##*=}"
+            shift
+        else
+            iface=$(networkctl --json=short | jq -r '[.Interfaces.[] | select(.Type == "wlan")] | min_by(.Index) | .Name')
+            [[ -z $iface ]] && print "no wlan interfaces found" && return 1
+        fi
+
+        if [[ -n "$@" ]]; then
+            typeset -ag callback_args=($@)
+            callbackfn() {
+                $callback_args
+                unset callback_args
+            }
+            trap callbackfn EXIT
+        fi
+
+        doas /usr/bin/ip link set dev $iface up || return 1
         doas /usr/bin/rfkill unblock wifi
-        iwctl station wlan scan on
+        iwctl station $iface scan on 2>&1 1>/dev/null
+
+        local evalstr="iwctl station $iface get-networks"
+        evalstr+=' | tail -n +5 | \
+            sed --regexp-extended \
+                -e "s/^\x1b\[0m//g" \
+                -e "s/\s*\x1b\[1;90m> \x1b\[[0-9;]*m  /✓│/" \
+                -e "s/^\s+/ │/g" \
+                -e "s/(\S+)\s*(\S+)\s*$/│\1│\2/g" | \
+            column -s "│" -t --table-columns "✓,Network Name,Security,Signal" --output-separator " │ "'
 
         local name=$(\
-            local evalstr='iwctl station wlan get-networks | sed -e "/Available networks/d" -e "s/\x1b\[[0-9;]*m//g" -e "/------/d" -e "/^\s*$/d" | cut -c 7-'
-            # local evalstr='iwctl station wlan get-networks | sed -e "/Available networks/d" -e "/------/d" -e "s/^\x1b\[[0-9;]*m//" -e "/^\s*$/d" -e "s/^\s...//g" -e "s/^.....>.....\(.*\)/`printf "\x1B[1m\033[3m"`\1`printf "\033[0m"`/"'
-            eval $evalstr | fzf --color='prompt:3,header:bold:underline:7'\
-            --no-preview\
-            --bind "change:reload(eval $evalstr)"\
-            --bind "tab:reload(eval $evalstr)"\
-            --nth='..-3'\
-            --inline-info\
-            --reverse\
-            --header-lines=1\
-            --ansi\
-            --no-multi\
-            | grep --color=never -ozP "^.+?(?=\s{1,99}(psk|open))"\
+            eval $evalstr | fzf --color='prompt:3,header:bold:underline:7' \
+            --no-preview \
+            --bind "change:reload(eval $evalstr)" \
+            --bind "tab:reload(eval $evalstr)" \
+            --nth='2' \
+            --delimiter=" │ " \
+            --inline-info \
+            --reverse \
+            --header-lines=1 \
+            --ansi \
+            --no-multi \
+            | perl -pe 's/^.*? │ (.*?)│.*$/\1/' | xargs
             )
-        if [[ -z ${name} ]]; then
-            return 0
-        fi
-        iwctl station wlan connect "$name"
-        wait
-        /usr/lib/systemd/systemd-networkd-wait-online --ignore=lo --timeout=30 --interface=wlan --operational-state=dormant && notify-send "Wi-Fi Manager" --icon=preferences-system-network "Connected to $(iw dev wlan link | grep -oP '(?<=SSID: ).+')"
-        iwctl station wlan scan off
+        iwctl station $iface scan off 2>&1 1>/dev/null
+        [[ -n ${name} ]] || return 0
+        iwctl station $iface disconnect
+        iwctl station $iface connect "$name" && \
+        /usr/lib/systemd/systemd-networkd-wait-online \
+            --ignore=lo \
+            --timeout=30 \
+            --interface=$iface \
+            --operational-state=dormant && \
+        notify-send \
+            "Wi-Fi Manager" \
+            --icon=preferences-system-network \
+            "Connected to $(networkctl --json=short | jq -r "[.Interfaces.[] | select(.Name == \"$iface\")] | min_by(.Index) | .SSID")"
+
     }
+
 
     wifipw() {
         local before=$EPOCHREALTIME
         ! systemctl is-active --quiet iwd.service && echo "Wi-Fi service is not running" && return 1
 
-        ssid="$(iw dev wlan link | grep --color=never -oP '(?<=SSID: ).+')"
+        ssid="$(iw dev $iface link | grep --color=never -oP '(?<=SSID: ).+')"
         [ -z $ssid ] && echo "Not connected to a network" && return 1
 
         # requires /etc/sudoers to have the line: tb ALL=(ALL) NOPASSWD:/usr/bin/cat /var/lib/iwd/*
