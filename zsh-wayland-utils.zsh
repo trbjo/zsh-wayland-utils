@@ -100,6 +100,12 @@ then
             )
         iwctl station $iface scan off 2>&1 1>/dev/null
         [[ -n ${name} ]] || return 0
+        current="$(iwctl station wlan0 show | grep --color=never -oP '(?<=Connected network ).+' | xargs)"
+
+        if [[ $current == $name ]]; then
+            return
+        fi
+
         iwctl station $iface disconnect
         iwctl station $iface connect "$name" && \
         /usr/lib/systemd/systemd-networkd-wait-online \
